@@ -23,3 +23,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
+
+## ToDo ideas from Amin
+
+* `clew_index=# select percentile_cont('{0.05, 0.10, 0.20, 0.30, 0.40, 0.50}'::double precision[]) WITHIN GROUP (ORDER BY pag
+e_size) from documents;`
+* x/y have no JS
+* x/y have no third-party JS
+* x/y have no known ads or trackers
