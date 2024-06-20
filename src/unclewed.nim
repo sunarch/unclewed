@@ -23,6 +23,8 @@ from std/strutils import strip
 
 # project imports
 import version as version
+from common import dual_output
+from sections import Section, print_header, print_stats
 when defined(DEBUG):
     import debug as debug
 
@@ -49,14 +51,6 @@ const options_long_no_val = @[
     "help",
     "version",
 ]
-
-proc dual_output(line: string, stream: streams.FileStream) =
-    echo(line)
-    stream.writeLine(line)
-
-proc section_stats(section_first_line: uint32, line_count: uint32, stream: streams.FileStream) =
-    let section_last_line: uint32 = line_count - 2
-    dual_output(fmt"    {section_first_line} - {section_last_line} ({section_last_line - section_first_line})", stream)
 
 proc main =
 
@@ -124,15 +118,12 @@ proc main =
     const Header3 = " Sections "
     dual_output(fmt"{Header3:=^80}", fh_stats_db)
 
-    var line_count: uint32 = 0
     var
+        line_count: uint32 = 0
         section_count: uint16 = 0
-        section_first_line: uint32 = 0
-        section_subcategory: string = ""
-        section_name: string
-        section_type: string
-        section_schema: string
-        section_owner: string
+
+    var section: Section
+    new(section)
 
     var line = ""
     var in_section_title = false
@@ -142,21 +133,17 @@ proc main =
             in_section_title = not in_section_title
         else:
             if in_section_title:
-                section_stats(section_first_line, line_count, fh_stats_db)
-                section_first_line = line_count - 1
+                section.last_line = line_count - 2
+                section.print_stats(fh_stats_db)
+                section.first_line = line_count - 1
                 section_count += 1
-                section_subcategory = ""
-                if scanf(line, "-- $*Name: $+; Type: $+; Schema: $+; Owner: $+$.",
-                         section_subcategory, section_name, section_type, section_schema, section_owner):
-
-                    dual_output(fmt"{section_subcategory}Name: {section_name}", fh_stats_db)
-                    dual_output(fmt"    Type:   {section_type}", fh_stats_db)
-                    dual_output(fmt"    Schema: {section_schema}", fh_stats_db)
-                    dual_output(fmt"    Owner:  {section_owner}", fh_stats_db)
+                if scanf(line, "-- $*Name: $+; Type: $+; Schema: $+; Owner: $+",
+                         section.name_prefix, section.name, section.`type`, section.schema, section.owner):
+                    section.print_header(fh_stats_db)
                 else:
                     dual_output(line.strip(trailing=false, chars={'-', ' '}), fh_stats_db)
 
-    section_stats(section_first_line, line_count, fh_stats_db)
+    section.print_stats(fh_stats_db)
     dual_output("", fh_stats_db)
     dual_output(fmt"Line count: {line_count}", fh_stats_db)
     dual_output(fmt"Section count: {section_count}", fh_stats_db)
