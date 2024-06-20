@@ -22,5 +22,5 @@ nim compile \
     --define:COMPILE_DATE:"$CURRENT_DATE" \
     --out:unclewed-debug --outdir:../build \
     --run ../src/unclewed.nim \
-    "../data/clew-index.dump" \
+    "../data/stage-0/clew-index.dump" \
     "--outdir" "../data"

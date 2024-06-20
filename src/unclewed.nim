@@ -47,14 +47,25 @@ type Options = object
     filepath: string = ""
     output_dir: string = ""
 
-const options_long_no_val = @[
-    "help",
-    "version",
-]
+const
+    Stage_0_Subdir = "stage-0".Path
+    DefaultFilename = "clew-index.dump"
+    DefaultFilepath = (Stage_0_Subdir / DefaultFilename.Path).string
+
+const
+    Stage_1_Subdir = "stage-1".Path
+    Stage_1_ResultFilename = "stats-db.txt"
+    Stage_1_ResultFilepath = (Stage_1_Subdir / Stage_1_ResultFilename.Path).string
+
+const
+    OptionsLongNoVal = @[
+        "help",
+        "version",
+    ]
 
 proc main =
 
-    var p = po.initOptParser(shortNoVal = {}, longNoVal = options_long_no_val)
+    var p = po.initOptParser(shortNoVal = {}, longNoVal = OptionsLongNoVal)
 
     when defined(DEBUG):
         var p_debug = p
@@ -68,7 +79,7 @@ proc main =
             of po.cmdEnd:
                 break
             of po.cmdShortOption, po.cmdLongOption:
-                if p.key in options_long_no_val and p.val != "":
+                if p.key in OptionsLongNoVal and p.val != "":
                     quit(fmt"Command line option '{p.key}' doesn't take a value", QuitFailure)
                 case p.key:
                     # Options for direct output:
@@ -90,12 +101,13 @@ proc main =
                 options.filepath = p.key
 
     if options.filepath == "":
-        quit("No filename given.", QuitFailure)
+        echo(fmt"No filename given, using default: {DefaultFilepath}")
+        options.filepath = DefaultFilepath
 
     if not (fileExists(options.filepath)):
         quit(fmt"File with the given path does not exist: '{options.filepath}'", QuitFailure)
 
-    var filepath_stats_db: string = "stats-db.txt"
+    var filepath_stats_db: string = Stage_1_ResultFilepath
     if options.output_dir != "":
         filepath_stats_db = (options.output_dir.Path / filepath_stats_db.Path).string
 
